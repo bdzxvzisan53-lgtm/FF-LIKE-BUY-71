@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Make Payment</title>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+            transition: transform 0.3s ease-in-out;
+            border: 1px solid #ddd;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        input[type="text"], input[type="password"], input[type="number"], input[type="file"] {
+            width: calc(100% - 22px);
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1em;
+            text-align: center;
+        }
+        input[type="file"] {
+            padding: 12px 10px;
+        }
+        .password-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            align-items: center;
+        }
+        .password-container input {
+            width: 100%;
+        }
+        .password-container .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #888;
+        }
+
+        button {
+            background-color: #2ecc71;
+            color: white;
+            padding: 14px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button.secondary {
+            background-color: #3498db;
+        }
+        button:hover {
+            background-color: #27ae60;
+        }
+        button.secondary:hover {
+            background-color: #2980b9;
+        }
+
+        .box {
+            background-color: #e6f7ff;
+            border: 2px solid #3498db;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #2c3e50;
+            transition: background-color 0.3s, border-color 0.3s;
+            margin-bottom: 20px;
+        }
+        .box:hover {
+            background-color: #d1ecff;
+            border-color: #2980b9;
+        }
+
+        .footer {
+            margin-top: 25px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        .footer a:hover {
+            color: #2980b9;
+        }
+        
+        .payment-info {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+        .payment-info.bKash-number {
+            font-size: 1.8em;
+            color: #000;
+        }
+
+        #success-message-page {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            padding: 15px 0;
+            margin-top: 20px;
+            background-color: #eee;
+            border-radius: 12px;
+        }
+        .nav button {
+            width: 30%;
+            padding: 10px;
+        }
+        .order-history-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .order-history-item p {
+            margin: 5px 0;
+        }
+        .order-status {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .order-status.complete {
+            color: #2ecc71;
+        }
+        .account-details {
+            text-align: center;
+        }
+        #profile-pic-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 2px solid #3498db;
+        }
+        .profile-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        #account-username, #account-phone, #account-password {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+        .account-details p span {
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="main-container">
+        <div id="account-page" class="page active">
+            <h2 id="welcome-text"></h2>
+            <div id="login-section">
+                <h3 id="login-heading"></h3>
+                <input type="text" id="login-username" placeholder="Username">
+                <div class="password-container">
+                    <input type="password" id="login-password" placeholder="Password">
+                    <span class="toggle-password" onclick="togglePasswordVisibility('login-password', this)">👁️</span>
+                </div>
+                <button id="login-btn"></button>
+                <p><span id="new-account-text"></span> <a href="#" id="show-create-account"></a></p>
+            </div>
+            <div id="create-account-section" style="display:none;">
+                <h3 id="create-account-heading"></h3>
+                <input type="text" id="create-name" placeholder="Your Name">
+                <input type="text" id="create-username" placeholder="Username">
+                <div class="password-container">
+                    <input type="password" id="create-password" placeholder="Password">
+                    <span class="toggle-password" onclick="togglePasswordVisibility('create-password', this)">👁️</span>
+                </div>
+                <input type="number" id="create-number" placeholder="Your Number">
+                <button id="create-btn"></button>
+                <p><span id="already-account-text"></span> <a href="#" id="show-login"></a></p>
+            </div>
+        </div>
+
+        <div id="content-page" class="page">
+            <div id="home-page">
+                <div class="box" id="service-box"></div>
+                <div class="footer">
+                    <p id="footer-text"></p>
+                    <a id="footer-link" href="#" target="_blank"></a>
+                </div>
+            </div>
+
+            <div id="order-history-page" style="display:none;">
+                <h2 id="order-history-heading"></h2>
+                <div id="order-list"></div>
+            </div>
+            
+            <div id="account-info-page" style="display:none;">
+                <h2 id="account-info-heading"></h2>
+                <div class="account-details">
+                    <p id="account-name-label"><span></span></p>
+                    <p id="account-username-label"><span></span></p>
+                    <p id="account-phone-label"><span></span></p>
+                    <button id="logout-btn" class="delete-btn" style="width: auto;"></button>
+                </div>
+            </div>
+
+            <div id="payment-page" style="display:none;">
+                <input type="text" id="uid-input" placeholder="Enter Game UID">
+                <button id="next-button"></button>
+                <div id="payment-details" style="display:none;">
+                    <p class="payment-info" id="payment-text"></p>
+                    <p class="payment-info bKash-number" id="bKash-number"></p>
+                    <input type="text" id="transaction-input" placeholder="Transaction ID">
+                    <button id="submit-button"></button>
+                </div>
+            </div>
+            
+            <div class="nav">
+                <button id="nav-home"></button>
+                <button id="nav-order"></button>
+                <button id="nav-account"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const accountPage = document.getElementById('account-page');
+        const contentPage = document.getElementById('content-page');
+        const homePage = document.getElementById('home-page');
+        const orderHistoryPage = document.getElementById('order-history-page');
+        const accountInfoPage = document.getElementById('account-info-page');
+        const paymentPage = document.getElementById('payment-page');
+        
+        window.addEventListener('storage', () => {
+            loadSettings();
+            loadOrderHistory();
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser && users[currentUser]) {
+                const settings = JSON.parse(localStorage.getItem('settings')) || {};
+                document.getElementById('account-name-label').innerHTML = `<strong>${settings['account-name-label-text-input'] || 'Name:'}</strong> <span>${users[currentUser].name || "Not Added"}</span>`;
+                document.getElementById('account-username-label').innerHTML = `<strong>${settings['account-username-label-text-input'] || 'Username:'}</strong> <span>${currentUser}</span>`;
+                document.getElementById('account-phone-label').innerHTML = `<strong>${settings['account-phone-label-text-input'] || 'Phone Number:'}</strong> <span>${users[currentUser].number}</span>`;
+            }
+        });
+
+        window.onload = function() {
+            loadSettings();
+            const loggedInUser = localStorage.getItem('currentUser');
+            if (loggedInUser) {
+                showContentPage('home');
+            } else {
+                showPage(accountPage);
+            }
+        };
+
+        function showPage(pageElement) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            pageElement.classList.add('active');
+        }
+
+        function showContentPage(pageName) {
+            showPage(contentPage);
+            homePage.style.display = 'none';
+            orderHistoryPage.style.display = 'none';
+            accountInfoPage.style.display = 'none';
+            paymentPage.style.display = 'none';
+            
+            if (pageName === 'home') {
+                homePage.style.display = 'block';
+            } else if (pageName === 'order') {
+                orderHistoryPage.style.display = 'block';
+                loadOrderHistory();
+            } else if (pageName === 'account') {
+                accountInfoPage.style.display = 'block';
+                const users = JSON.parse(localStorage.getItem('users')) || {};
+                const currentUser = localStorage.getItem('currentUser');
+                const settings = JSON.parse(localStorage.getItem('settings')) || {};
+
+                if (users[currentUser]) {
+                    document.getElementById('account-name-label').innerHTML = `<strong>${settings['account-name-label-text-input'] || 'Name:'}</strong> <span>${users[currentUser].name || "Not Added"}</span>`;
+                    document.getElementById('account-username-label').innerHTML = `<strong>${settings['account-username-label-text-input'] || 'Username:'}</strong> <span>${currentUser}</span>`;
+                    document.getElementById('account-phone-label').innerHTML = `<strong>${settings['account-phone-label-text-input'] || 'Phone Number:'}</strong> <span>${users[currentUser].number}</span>`;
+                }
+            } else if (pageName === 'payment') {
+                paymentPage.style.display = 'block';
+                document.getElementById('payment-details').style.display = 'none';
+            }
+        }
+
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('settings')) || {};
+            
+            document.getElementById('page-title').textContent = settings['page-title-input'] || 'Make Payment';
+            document.getElementById('service-box').textContent = settings['box-text-input'] || '100 LIKE 10 TAKA';
+            document.getElementById('footer-text').textContent = settings['footer-text-input'] || 'For any issues, message on Telegram';
+            document.getElementById('footer-link').textContent = settings['footer-link-text-input'] || '@jahidx71';
+            document.getElementById('footer-link').href = settings['footer-link-url-input'] || 'https://t.me/jahidx71';
+            document.getElementById('uid-input').placeholder = settings['uid-placeholder-input'] || 'Enter Game UID';
+            document.getElementById('payment-text').textContent = settings['payment-text-input'] || 'bKash Send Money';
+            document.getElementById('bKash-number').textContent = settings['bKash-number-input'] || '01885367115';
+            document.getElementById('transaction-input').placeholder = settings['transaction-placeholder-input'] || 'Transaction ID';
+            
+            document.getElementById('next-button').textContent = settings['next-button-text-input'] || 'NEXT';
+            document.getElementById('submit-button').textContent = settings['submit-button-text-input'] || 'Submit';
+            
+            document.getElementById('nav-home').textContent = settings['nav-home-text-input'] || 'HOME';
+            document.getElementById('nav-order').textContent = settings['nav-order-text-input'] || 'ORDER';
+            document.getElementById('nav-account').textContent = settings['nav-account-text-input'] || 'ACCOUNT';
+            document.getElementById('welcome-text').textContent = settings['welcome-text-input'] || 'Welcome!';
+            document.getElementById('login-heading').textContent = settings['login-heading-input'] || 'Login';
+            document.getElementById('new-account-text').textContent = settings['new-account-text-input'] || 'Want to create a new account?';
+            document.getElementById('show-create-account').textContent = settings['click-here-text-input'] || 'Click here';
+            document.getElementById('create-account-heading').textContent = settings['create-account-heading-input'] || 'Create a new account';
+            document.getElementById('already-account-text').textContent = settings['already-account-text-input'] || 'Already have an account?';
+            document.getElementById('show-login').textContent = settings['click-here-text-input'] || 'Click here';
+            document.getElementById('order-history-heading').textContent = settings['order-history-heading-input'] || 'Your Orders';
+            document.getElementById('account-info-heading').textContent = settings['account-info-heading-input'] || 'Account';
+            document.getElementById('logout-btn').textContent = settings['logout-button-text-input'] || 'Logout';
+            document.getElementById('login-btn').textContent = settings['login-button-text-input'] || 'Login';
+            document.getElementById('create-btn').textContent = settings['create-button-text-input'] || 'Create Account';
+
+            document.getElementById('login-username').placeholder = settings['login-username-placeholder-input'] || 'Username';
+            document.getElementById('login-password').placeholder = settings['login-password-placeholder-input'] || 'Password';
+            document.getElementById('create-name').placeholder = settings['create-name-placeholder-input'] || 'Your Name';
+            document.getElementById('create-username').placeholder = settings['create-username-placeholder-input'] || 'Username';
+            document.getElementById('create-password').placeholder = settings['create-password-placeholder-input'] || 'Password';
+            document.getElementById('create-number').placeholder = settings['create-number-placeholder-input'] || 'Your Number';
+        }
+        
+        function loadOrderHistory() {
+            const currentUser = localStorage.getItem('currentUser');
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            const userOrders = users[currentUser]?.submissions || [];
+            const orderList = document.getElementById('order-list');
+            orderList.innerHTML = '';
+            const settings = JSON.parse(localStorage.getItem('settings')) || {};
+
+            if (userOrders.length === 0) {
+                orderList.innerHTML = `<p style="text-align:center;">${settings['no-orders-text-input'] || 'You have no orders.'}</p>`;
+                return;
+            }
+            userOrders.forEach((order, index) => {
+                const item = document.createElement('div');
+                item.className = 'order-history-item';
+                const statusClass = order.status === 'Complete' ? 'complete' : 'pending';
+                item.innerHTML = `
+                    <p><strong>${settings['user-label-text-input'] || 'Username:'}</strong> ${currentUser}</p>
+                    <p><strong>${settings['order-id-label-text-input'] || 'Order ID:'}</strong> #${index + 1}</p>
+                    <p><strong>${settings['uid-label-text-input'] || 'UID:'}</strong> ${order.uid}</p>
+                    <p><strong>${settings['transaction-id-label-text-input'] || 'Transaction ID:'}</strong> ${order.transactionId}</p>
+                    <p><strong>${settings['time-label-text-input'] || 'Time:'}</strong> ${order.timestamp}</p>
+                    <p><strong>${settings['status-label-text-input'] || 'Status:'}</strong> <span class="order-status ${statusClass}">${order.status}</span></p>
+                `;
+                orderList.appendChild(item);
+            });
+        }
+
+        function togglePasswordVisibility(id, icon) {
+            const input = document.getElementById(id);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                icon.textContent = '👁️';
+            }
+        }
+
+        document.getElementById('show-create-account').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('create-account-section').style.display = 'block';
+        });
+        document.getElementById('show-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('create-account-section').style.display = 'none';
+        });
+
+        document.getElementById('create-btn').addEventListener('click', () => {
+            const name = document.getElementById('create-name').value;
+            const username = document.getElementById('create-username').value;
+            const password = document.getElementById('create-password').value;
+            const number = document.getElementById('create-number').value;
+
+            const settings = JSON.parse(localStorage.getItem('settings')) || {};
+            if (!name || !username || !password || !number) {
+                alert(settings['all-fields-error-input'] || 'All fields are required.');
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem('users')) || {};
+            if (users[username]) {
+                alert(settings['username-exists-error-input'] || 'This username already exists. Please use another one.');
+                return;
+            }
+
+            const newUser = { name: name, password, number, submissions: [], isBanned: false };
+            users[username] = newUser;
+            localStorage.setItem('users', JSON.stringify(users));
+            alert(settings['account-created-success-input'] || 'Account created successfully. Please login now.');
+            document.getElementById('show-login').click();
+        });
+        
+        document.getElementById('login-btn').addEventListener('click', () => {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            let users = JSON.parse(localStorage.getItem('users')) || {};
+            const settings = JSON.parse(localStorage.getItem('settings')) || {};
+
+            if (users[username] && users[username].password === password) {
+                if (users[username].isBanned) {
+                    alert(settings['banned-account-error-input'] || 'This account has been banned.');
+                    return;
+                }
+                localStorage.setItem('currentUser', username);
+                showContentPage('home');
+            } else {
+                alert(settings['login-error-text-input'] || 'Incorrect username or password.');
+            }
+        });
+
+        document.getElementById('nav-home').addEventListener('click', () => showContentPage('home'));
+        document.getElementById('nav-order').addEventListener('click', () => showContentPage('order'));
+        document.getElementById('nav-account').addEventListener('click', () => showContentPage('account'));
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('currentUser');
+            showPage(accountPage);
+        });
+
+        document.getElementById('service-box').addEventListener('click', () => showContentPage('payment'));
+        
+        document.getElementById('next-button').addEventListener('click', () => {
+            const uid = document.getElementById('uid-input').value;
+            const settings = JSON.parse(localStorage.getItem('settings')) || {};
+
+            if (!uid) {
+                alert(settings['uid-error-text-input'] || 'Please enter Game UID.');
+                return;
+            }
+            document.getElementById('payment-details').style.display = 'block';
+        });
+
+        document.getElementById('submit-button').addEventListener('click', () => {
+            const uid = document.getElementById('uid-input').value;
+            const transactionId = document.getElementById('transaction-input').value;
+            const settings = JSON.parse(localStorage.getItem('settings')) || {};
+
+            if (!uid || !transactionId) {
+                alert(settings['all-fields-error-input'] || 'All fields are required.');
+                return;
+            }
+
+            const currentUser = localStorage.getItem('currentUser');
+            let users = JSON.parse(localStorage.getItem('users')) || {};
+            
+            if (users[currentUser]) {
+                const newSubmission = {
+                    uid,
+                    transactionId,
+                    status: 'Pending',
+                    timestamp: new Date().toLocaleString()
+                };
+                users[currentUser].submissions.push(newSubmission);
+                localStorage.setItem('users', JSON.stringify(users));
+                
+                showContentPage('order');
+            } else {
+                alert('Not logged in.');
+            }
+        });
+
+    </script>
+</body>
+</html>
